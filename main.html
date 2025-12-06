@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Typing Test</title>
+<style>
+:root{--bg:#212529;--accent:#ffd60a;--accent-dim:rgba(255,214,10,0.18);--danger:#ff4d4d;}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+#timer{height:72px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;text-shadow:0 0 10px rgba(255,214,10,0.65);transition:color .3s, text-shadow .3s}
+.divider{height:2px;background:var(--accent-dim)}
+.main{display:flex;height:calc(100% - 74px)}
+.pane{width:50%;padding:26px;box-sizing:border-box;display:flex;flex-direction:column}
+#givenText{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.003));padding:22px;border-radius:12px;font-size:16px;line-height:1.7;user-select:none;pointer-events:none;overflow:auto;white-space:pre-wrap;word-wrap:break-word;}
+#blindBox{flex:1;padding:18px;border-radius:12px;background:rgba(255,255,255,0.03);overflow:auto;outline:none;box-shadow:inset 0 0 18px rgba(255,214,10,0.02)}
+#dots{white-space:pre-wrap;word-break:break-word;font-size:16px;line-height:1.7;color:var(--accent)}
+.infoRow{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:14px;color:rgba(255,214,10,0.9)}
+.badge{background:rgba(255,214,10,0.06);padding:8px 12px;border-radius:10px}
+.footerNote{padding-top:12px;color:rgba(255,214,10,0.75);font-size:13px;text-align:center}
+@media(max-width:880px){.main{flex-direction:column}.pane{width:100%;height:50%}}
+</style>
+</head>
+<body>
+
+<div id="timer">Time: 0:00</div>
+<div class="divider"></div>
+<div class="main">
+<div class="pane">
+  <div id="givenText"></div>
+  <div class="footerNote">Paragraph cannot be copied, selected, or right-clicked. Type exactly as shown.</div>
+</div>
+<div class="pane">
+  <div id="blindBox" tabindex="0" title="Focus here and start typing">
+    <div id="dots"></div>
+  </div>
+  <div class="infoRow">
+    <div class="badge" id="typedCount">Typed: 0</div>
+    <div style="opacity:0.9">Backspace/Delete disabled • Typing hidden</div>
+  </div>
+</div>
+</div>
+
+<script>
+
+const WORDS = `technology future learning development artificial intelligence machine learning computer science engineering systems global network productivity environment creativity problem solving innovation design performance knowledge research digital security data analysis automation integration architecture software hardware virtual reality cloud computing analytics algorithms neural networks optimization performance experiments collaboration education tools platforms scalability reliability infrastructure applications interface experience mobile web backend frontend database storage encryption privacy accessibility deployment testing debugging maintenance updates community contributions open-source features services solutions entrepreneurs startups business growth marketing strategy product management user experience interaction design prototyping iteration feedback testing methodologies continuous integration continuous delivery containerization orchestration microservices resilience availability fault tolerance logging monitoring observability metrics performance tuning caching concurrency parallelism asynchronous synchronous scalability elasticity virtualization resource management API endpoints requests responses latency throughput bandwidth compression encryption authentication authorization tokens sessions cookies caching strategies CDN edge computing latency reduction image optimization responsive design adaptive layout accessibility standards semantic markup progressive enhancement usability personas journey analytics conversion retention engagement monetization pricing experimentation A/B testing growth retention onboarding referral content storytelling branding localization internationalization collaboration agile scrum sprint planning retrospectives roadmap quality assurance security audits compliance documentation tutorials examples best practices training mentorship internships education laboratories creativity inspiration curiosity persistence discipline practice mastery focus determination resilience adaptability leadership management communication persuasion empathy teamwork wellbeing balance health exercise nutrition rest recovery`.split(/\s+/);
+
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function shortClause(){ const a = ['which drives progress','that fosters innovation','that improves lives','for future growth','to increase efficiency','that benefits everyone']; return a[Math.floor(Math.random()*a.length)]; }
+function generateParagraph(wordCount=520){
+  const out=[]; let remaining=wordCount;
+  while(remaining>0){
+    const sentenceLen=Math.min(remaining,8+Math.floor(Math.random()*11));
+    const words=[];for(let i=0;i<sentenceLen;i++){const w=WORDS[Math.floor(Math.random()*WORDS.length)];words.push(i===0?capitalize(w):w);}
+    let sentence=words.join(' ');
+    if(sentenceLen>10 && Math.random()<0.35){const pos=3+Math.floor(Math.random()*(Math.max(1,sentenceLen-6)));const parts=sentence.split(' ');parts[pos]=parts[pos]+',';sentence=parts.join(' ');}
+    sentence+=(Math.random()<0.03?' — '+shortClause()+'.':'.');out.push(sentence);remaining-=sentenceLen;
+  }return out.join(' ');
+}
+const para=generateParagraph(520);
+document.getElementById('givenText').innerText=para;
+
+
+document.addEventListener('contextmenu', e=>e.preventDefault());
+document.addEventListener('copy', e=>e.preventDefault());
+document.addEventListener('cut', e=>e.preventDefault());
+document.addEventListener('selectstart', e=>e.preventDefault());
+
+
+let configured=parseInt(localStorage.getItem('testDuration'),10);
+if(!configured||isNaN(configured)||configured<=0)configured=30;
+let timeLeft=configured;
+const timerEl=document.getElementById('timer');
+function formatTime(s){const m=Math.floor(s/60);const sec=s%60;return`${m}:${sec<10?'0'+sec:sec}`;}
+function updateTimerDisplay(){timerEl.textContent=`Time: ${formatTime(timeLeft)}`;if(timeLeft<=10){timerEl.style.color='var(--danger)';timerEl.style.textShadow='0 0 14px rgba(255,77,77,0.95)';}else{timerEl.style.color='';timerEl.style.textShadow='0 0 10px rgba(255,214,10,0.65)';}}
+updateTimerDisplay();
+const timerInterval=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timerInterval);endTest();}},1000);
+
+
+const blindBox=document.getElementById('blindBox');const dotsEl=document.getElementById('dots');const typedCountEl=document.getElementById('typedCount');let typed='';blindBox.focus();
+function isPrintableKey(e){return e.key&&e.key.length===1||e.key==='Enter';}
+blindBox.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&['c','x','v','a','C','X','V','A'].includes(e.key)){e.preventDefault();return;}const blocked=['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Tab'];if(blocked.includes(e.key)){e.preventDefault();return;}if(isPrintableKey(e)){typed+=(e.key==='Enter'?'\n':e.key);updateDots();e.preventDefault();return;}e.preventDefault();});
+blindBox.addEventListener('paste',e=>e.preventDefault());blindBox.addEventListener('drop',e=>e.preventDefault());
+document.addEventListener('click',()=>blindBox.focus());
+function updateDots(){dotsEl.textContent='•'.repeat(typed.length);typedCountEl.textContent=`Typed: ${typed.length}`;}
+
+
+function endTest(){
+  const original=para.replace(/\r/g,'');const totalChars=original.length;let correct=0;for(let i=0;i<typed.length&&i<original.length;i++){if(typed[i]===original[i])correct++;}const accuracy=totalChars>0?(correct/totalChars)*100:0;
+  const minutes=configured/60;const cpm=minutes>0?(correct/minutes):0;const wpm=cpm/5;const finalScore=wpm*(accuracy/100);
+  const result={accuracy:parseFloat(accuracy.toFixed(2)),typedChars:typed.length,correctChars:correct,totalChars,cpm:Math.round(cpm),wpm:Math.round(wpm),finalScore:parseFloat(finalScore.toFixed(2)),timeConfigured:configured,timestamp:new Date().toISOString(),paragraph:original,typedString:typed};
+  sessionStorage.setItem('lastResult',JSON.stringify(result));
+  window.location.href='result.html';
+}
+</script>
+</body>
+</html>

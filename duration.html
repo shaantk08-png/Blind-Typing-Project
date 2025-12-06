@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Duration</title>
+<style>
+body{margin:0;height:100vh;display:flex;justify-content:center;align-items:flex-start;background:#212529;font-family:Segoe UI,Arial,sans-serif;color:#ffd60a;overflow:hidden;padding-top:120px;text-align:center;}
+h1{font-size:2.8em;text-shadow:0 0 10px rgba(255,214,10,0.6);}
+button{margin:15px;padding:15px 30px;font-size:1.2em;border-radius:12px;border:none;background:#ffd60a;color:#212529;cursor:pointer;transition:all 0.3s ease;text-shadow:0 0 6px rgba(255,214,10,0.5);}
+button:hover{transform:scale(1.08);box-shadow:0 0 20px rgba(255,214,10,0.8);}
+</style>
+</head>
+<body>
+<div>
+<h1>Select Duration of the Test</h1>
+<button onclick="startTest(30)">30 sec</button>
+<button onclick="startTest(60)">1 min</button>
+<button onclick="startTest(120)">2 min</button>
+</div>
+<script>
+function startTest(seconds){
+    localStorage.setItem('testDuration', seconds);
+    window.location.href='main.html';
+}
+</script>
+</body>
+</html>
